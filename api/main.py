@@ -1,10 +1,17 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 import os
+import time
+import logging
 from dotenv import load_dotenv
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -36,6 +43,75 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add middleware for request timing
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+    # Log request details
+    logger.info(
+        f"Path: {request.url.path} | Method: {request.method} | "
+        f"Process Time: {process_time:.3f}s | Status: {response.status_code}"
+    )
+    return response
+
+# Error handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Error processing request: {request.url.path}", exc_info=exc)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": str(exc),
+            "path": request.url.path,
+            "timestamp": datetime.now().isoformat()
+        }
+    )
+
+# Monitoring endpoints
+@app.get("/api/health")
+async def health_check():
+    """Basic health check endpoint"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "version": "1.0.0"
+    }
+
+@app.get("/api/metrics")
+async def metrics():
+    """Return basic metrics about the API"""
+    return {
+        "uptime": time.time() - app.state.start_time,
+        "total_requests": app.state.request_count,
+        "error_count": app.state.error_count,
+        "timestamp": datetime.now().isoformat()
+    }
+
+# Startup event
+@app.on_event("startup")
+async def startup_event():
+    """Initialize state variables on startup"""
+    app.state.start_time = time.time()
+    app.state.request_count = 0
+    app.state.error_count = 0
+    logger.info("Application started successfully")
+
+# Request counter middleware
+@app.middleware("http")
+async def count_requests(request: Request, call_next):
+    app.state.request_count += 1
+    try:
+        response = await call_next(request)
+        if response.status_code >= 400:
+            app.state.error_count += 1
+        return response
+    except Exception as e:
+        app.state.error_count += 1
+        raise e
 
 # Request/Response Models
 class TransactionRequest(BaseModel):
@@ -143,11 +219,6 @@ async def submit_filing(request: FilingRequest):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-# Health check endpoint for Vercel
-@app.get("/api/healthz")
-async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
 if __name__ == "__main__":
     import uvicorn
