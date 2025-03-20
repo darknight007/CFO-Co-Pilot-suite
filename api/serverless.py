@@ -1,12 +1,15 @@
 from fastapi import FastAPI
-from datetime import datetime
+from mangum import Mangum
 
 app = FastAPI()
 
-@app.get("/api/health")
-async def health():
-    return {"status": "ok", "timestamp": str(datetime.now())}
-
 @app.get("/")
 async def root():
-    return {"message": "CFO Co-Pilot Suite API"}
+    return {"message": "Hello from CFO Co-Pilot Suite"}
+
+@app.get("/api/health")
+async def health():
+    return {"status": "healthy"}
+
+# Handler for AWS Lambda/Vercel
+handler = Mangum(app)
