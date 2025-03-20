@@ -2,17 +2,25 @@
     "version": 2,
     "builds": [
         {
-            "src": "api/main.py",
+            "src": "api/serverless.py",
             "use": "@vercel/python"
         }
     ],
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "api/main.py"
+            "dest": "api/serverless.py"
         }
     ],
     "env": {
-        "PYTHONPATH": "."
+        "PYTHONPATH": ".",
+        "ENVIRONMENT": "production",
+        "LOG_LEVEL": "INFO"
+    },
+    "functions": {
+        "api/serverless.py": {
+            "memory": 1024,
+            "maxDuration": 10
+        }
     }
 }
