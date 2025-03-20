@@ -1,0 +1,68 @@
+{
+    "invoice_id": "INV-2025-001",
+    "date": "2025-03-20",
+    "vendor": {
+        "id": "VENDOR123",
+        "name": "Tech Solutions Pvt Ltd",
+        "country": "India",
+        "tax_id": "29AAACC1206D1ZB",
+        "address": {
+            "street": "123 Tech Park",
+            "city": "Bangalore",
+            "state": "Karnataka",
+            "country": "India",
+            "zip": "560001"
+        }
+    },
+    "customer": {
+        "id": "CUST456",
+        "name": "Global Corp Inc",
+        "country": "Singapore",
+        "tax_id": "201234567K",
+        "address": {
+            "street": "456 Business Ave",
+            "city": "Singapore",
+            "country": "Singapore",
+            "zip": "238869"
+        }
+    },
+    "items": [
+        {
+            "id": "ITEM001",
+            "description": "Cloud Computing Services",
+            "category": "Digital Services",
+            "quantity": 1,
+            "unit_price": 50000.00,
+            "currency": "USD",
+            "tax_category": "GST"
+        },
+        {
+            "id": "ITEM002",
+            "description": "Technical Support",
+            "category": "Professional Services",
+            "quantity": 100,
+            "unit_price": 150.00,
+            "currency": "USD",
+            "tax_category": "GST"
+        }
+    ],
+    "payment": {
+        "subtotal": 65000.00,
+        "tax": {
+            "gst": 11700.00,
+            "rate": "18%"
+        },
+        "total": 76700.00,
+        "currency": "USD",
+        "terms": "Net 30",
+        "due_date": "2025-04-19"
+    },
+    "metadata": {
+        "service_period": {
+            "start": "2025-03-01",
+            "end": "2025-03-31"
+        },
+        "contract_reference": "CONT-2024-789",
+        "po_number": "PO-2025-456"
+    }
+}
